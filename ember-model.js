@@ -648,11 +648,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   init: function() {
+    this._super();
     this._createReference();
     if (!this._dirtyAttributes) {
       set(this, '_dirtyAttributes', []);
     }
-    this._super();
   },
 
   _createReference: function() {
@@ -698,7 +698,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       if (relationshipMeta.options.embedded) {
         relationshipType = relationshipMeta.type;
         if (typeof relationshipType === "string") {
-          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner._lookupFactory('model:'+ relationshipType);
+          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner.factoryFor('model:'+ relationshipType);
         }
 
         relationshipData = data[relationshipKey];
@@ -1378,7 +1378,7 @@ Ember.Model.reopenClass({
     }
     Ember.setOwner(record, owner);
     // set(record, 'data', data);
-    
+
     record.load(data[get(this, 'primaryKey')], data);
     if (!this.adapter.serializer) {
       var store = owner.lookup('service:store');
@@ -2209,7 +2209,8 @@ Ember.Model.Store = Ember.Service.extend({
 
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
-    return owner._lookupFactory('model:'+type);
+    var factory = owner.factoryFor('model:'+type);
+    return factory && factory.class;
   },
 
   adapterFor: function(type) {
@@ -2220,8 +2221,8 @@ Ember.Model.Store = Ember.Service.extend({
       adapter.set('serializer', serializer);
       return adapter;
     } else {
-      adapter = owner._lookupFactory('adapter:'+ type) ||
-        owner._lookupFactory('adapter:application') ||
+      adapter = owner.factoryFor('adapter:'+ type) ||
+        owner.factoryFor('adapter:application') ||
         Ember.RESTAdapter;
 
       return adapter ? adapter.create({serializer:serializer}) : adapter;
@@ -2230,8 +2231,8 @@ Ember.Model.Store = Ember.Service.extend({
 
   serializerFor: function(type) {
     var owner = Ember.getOwner(this);
-    var serializer = owner._lookupFactory('serializer:'+ type) ||
-      owner._lookupFactory('serializer:application') ||
+    var serializer = owner.factoryFor('serializer:'+ type) ||
+      owner.factoryFor('serializer:application') ||
       Ember.JSONSerializer;
 
     return serializer ? serializer.create() : serializer;
@@ -2240,6 +2241,7 @@ Ember.Model.Store = Ember.Service.extend({
   createRecord: function(type, props) {
     var klass = this.modelFor(type);
     var owner = Ember.getOwner(this);
+    Ember.setOwner(klass, owner);
     klass.reopenClass({adapter: this.adapterFor(type)});
     var record = klass.create(props);
     Ember.setOwner(record, owner);

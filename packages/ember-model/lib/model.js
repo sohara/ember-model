@@ -84,11 +84,11 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   init: function() {
+    this._super();
     this._createReference();
     if (!this._dirtyAttributes) {
       set(this, '_dirtyAttributes', []);
     }
-    this._super();
   },
 
   _createReference: function() {
@@ -134,7 +134,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       if (relationshipMeta.options.embedded) {
         relationshipType = relationshipMeta.type;
         if (typeof relationshipType === "string") {
-          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner._lookupFactory('model:'+ relationshipType);
+          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner.factoryFor('model:'+ relationshipType);
         }
 
         relationshipData = data[relationshipKey];
@@ -814,7 +814,7 @@ Ember.Model.reopenClass({
     }
     Ember.setOwner(record, owner);
     // set(record, 'data', data);
-    
+
     record.load(data[get(this, 'primaryKey')], data);
     if (!this.adapter.serializer) {
       var store = owner.lookup('service:store');
