@@ -1,0 +1,11 @@
+import Ember from 'ember';
+export const Model = Ember.Model;
+export const Adapter = Ember.Adapter;
+export const RESTAdapter = Ember.RESTAdapter;
+export const FixtureAdapter = Ember.FixtureAdapter;
+export const Store = Ember.Model.Store;
+export const attr = Ember.attr;
+export const hasMany = Ember.hasMany;
+export const belongsTo = Ember.belongsTo;
+export const RecordArray = Ember.RecordArray;
+export const FilteredRecordArray = Ember.FilteredRecordArray;
