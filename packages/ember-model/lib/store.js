@@ -4,7 +4,8 @@ Ember.Model.Store = Ember.Service.extend({
 
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
-    return owner._lookupFactory('model:'+type);
+    var Factory = owner.factoryFor('model:'+type);
+    return Factory.class;
   },
 
   adapterFor: function(type) {
@@ -15,8 +16,8 @@ Ember.Model.Store = Ember.Service.extend({
       adapter.set('serializer', serializer);
       return adapter;
     } else {
-      adapter = owner._lookupFactory('adapter:'+ type) ||
-        owner._lookupFactory('adapter:application') ||
+      adapter = owner.factoryFor('adapter:'+ type) ||
+        owner.factoryFor('adapter:application') ||
         Ember.RESTAdapter;
 
       return adapter ? adapter.create({serializer:serializer}) : adapter;
@@ -25,8 +26,8 @@ Ember.Model.Store = Ember.Service.extend({
 
   serializerFor: function(type) {
     var owner = Ember.getOwner(this);
-    var serializer = owner._lookupFactory('serializer:'+ type) ||
-      owner._lookupFactory('serializer:application') ||
+    var serializer = owner.factoryFor('serializer:'+ type) ||
+      owner.factoryFor('serializer:application') ||
       Ember.JSONSerializer;
 
     return serializer ? serializer.create() : serializer;
@@ -36,8 +37,7 @@ Ember.Model.Store = Ember.Service.extend({
     var klass = this.modelFor(type);
     var owner = Ember.getOwner(this);
     klass.reopenClass({adapter: this.adapterFor(type)});
-    var record = klass.create(props);
-    Ember.setOwner(record, owner);
+    var record = klass.create(owner.ownerInjection(), props);
     return record;
   },
 
