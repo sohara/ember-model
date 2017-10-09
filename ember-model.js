@@ -2210,7 +2210,6 @@ Ember.Model.Store = Ember.Service.extend({
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
     var Factory = owner.factoryFor('model:'+type);
-    console.log('lllllllllllllllllllllllllllllllllllllllllllllllll');
     return Factory.class;
   },
 
@@ -2226,7 +2225,6 @@ Ember.Model.Store = Ember.Service.extend({
         owner.factoryFor('adapter:application') ||
         Ember.RESTAdapter;
 
-      //might need to inject owner
       return adapter ? adapter.create({serializer:serializer}) : adapter;
     }
   },
@@ -2237,7 +2235,6 @@ Ember.Model.Store = Ember.Service.extend({
       owner.factoryFor('serializer:application') ||
       Ember.JSONSerializer;
 
-    //might need to inject owner
     return serializer ? serializer.create() : serializer;
   },
 
@@ -2246,7 +2243,6 @@ Ember.Model.Store = Ember.Service.extend({
     var owner = Ember.getOwner(this);
     klass.reopenClass({adapter: this.adapterFor(type)});
     var record = klass.create(owner.ownerInjection(), props);
-    //Ember.setOwner(record, owner);
     return record;
   },
 
