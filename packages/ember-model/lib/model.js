@@ -730,8 +730,8 @@ Ember.Model.reopenClass({
           attrs = {isLoaded: false};
 
       attrs[primaryKey] = id;
-      record = this.create(attrs);
-      Ember.setOwner(record, owner);
+      record = this.create(owner.ownerInjection(), attrs);
+      //Ember.setOwner(record, owner);
       if (!this.transient) {
         var sideloadedData = this.sideloadedData && this.sideloadedData[id];
         if (sideloadedData) {
