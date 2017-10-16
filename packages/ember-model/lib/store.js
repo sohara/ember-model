@@ -8,6 +8,12 @@ Ember.Model.Store = Ember.Service.extend({
     return Factory.class;
   },
 
+  modelFactoryFor: function(modelName) {
+    var owner = Ember.getOwner(this);
+    var Factory = owner.factoryFor('model:' + modelName);
+    return Factory;
+  },
+
   adapterFor: function(type) {
     var adapter = this.modelFor(type).adapter,
         owner = Ember.getOwner(this);
@@ -34,10 +40,10 @@ Ember.Model.Store = Ember.Service.extend({
   },
 
   createRecord: function(type, props) {
-    var klass = this.modelFor(type);
+    var Factory = this.modelFactoryFor(type);
     var owner = Ember.getOwner(this);
-    klass.reopenClass({adapter: this.adapterFor(type)});
-    var record = klass.create(owner.ownerInjection(), props);
+    Factory.class.reopenClass({adapter: this.adapterFor(type)});
+    var record = Factory.create(props);
     return record;
   },
 

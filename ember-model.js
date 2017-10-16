@@ -497,21 +497,22 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 
 Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
   create: function(attrs) {
-    var klass = get(this, 'modelClass');
+    var modelClass = get(this, 'modelClass');
     var isPolymorphic = get(this, 'polymorphic');
     var owner = Ember.getOwner(this);
+    var Factory;
     var record;
     var store;
     var type;
 
     if (isPolymorphic) {
-      Ember.assert('The class ' + klass.toString() + ' is missing the polymorphicType implementation.', klass.polymorphicType);
+      Ember.assert('The class ' + modelClass.toString() + ' is missing the polymorphicType implementation.', modelClass.polymorphicType);
       store = owner.lookup('service:store');
-      type =  klass.polymorphicType(attrs);
-      klass = store.modelFor(type);
+      type =  modelClass.polymorphicType(attrs);
+      Factory = store.modelFactoryFor(type);
     }
 
-    record = klass.create(owner.ownerInjection(), attrs);
+    record = (Factory || modelClass).create(attrs);
     this.pushObject(record);
 
     return record; // FIXME: inject parent's id
@@ -522,7 +523,8 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     var reference = content.objectAt(idx);
     var attrs = reference.data;
     var isPolymorphic = get(this, 'polymorphic');
-    var klass = get(this, 'modelClass');
+    var modelClass = get(this, 'modelClass');
+    var Factory;
     var primaryKey;
     var type;
     var store;
@@ -533,18 +535,19 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
       Ember.setOwner(record, owner);
     } else {
       if (isPolymorphic) {
-        Ember.assert('The class ' + klass.toString() + ' is missing the polymorphicType implementation.', klass.polymorphicType);
+        Ember.assert('The class ' + modelClass.toString() + ' is missing the polymorphicType implementation.', modelClass.polymorphicType);
         store = owner.lookup('service:store');
-        type =  klass.polymorphicType(attrs);
-        klass = store.modelFor(type);
-        if (!klass.adapter.serializer) {
-          Ember.set(klass, 'adapter', store.adapterFor(type));
+        type =  modelClass.polymorphicType(attrs);
+        modelClass = store.modelFor(type);
+        Factory = store.modelFactoryFor(type);
+        if (!modelClass.adapter.serializer) {
+          Ember.set(modelClass, 'adapter', store.adapterFor(type));
         }
       }
-      record = klass.create(owner.ownerInjection(), { _reference: reference });
+      record = (Factory || modelClass).create(owner.ownerInjection(), { _reference: reference });
       reference.record = record;
       if (attrs) {
-        primaryKey = get(klass, 'primaryKey');
+        primaryKey = get(modelClass, 'primaryKey');
         record.load(attrs[primaryKey], attrs);
       }
     }
@@ -2211,6 +2214,12 @@ Ember.Model.Store = Ember.Service.extend({
     return Factory.class;
   },
 
+  modelFactoryFor: function(modelName) {
+    var owner = Ember.getOwner(this);
+    var Factory = owner.factoryFor('model:' + modelName);
+    return Factory;
+  },
+
   adapterFor: function(type) {
     var adapter = this.modelFor(type).adapter,
         owner = Ember.getOwner(this);
@@ -2237,10 +2246,10 @@ Ember.Model.Store = Ember.Service.extend({
   },
 
   createRecord: function(type, props) {
-    var klass = this.modelFor(type);
+    var Factory = this.modelFactoryFor(type);
     var owner = Ember.getOwner(this);
-    klass.reopenClass({adapter: this.adapterFor(type)});
-    var record = klass.create(owner.ownerInjection(), props);
+    Factory.class.reopenClass({adapter: this.adapterFor(type)});
+    var record = Factory.create(props);
     return record;
   },
 
