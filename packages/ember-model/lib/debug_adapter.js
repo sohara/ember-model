@@ -105,7 +105,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
 Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
-    name: "data-adapter",
+    name: "ember-model-data-adapter",
 
     initialize: function() {
       var application = arguments[1] || arguments[0];
