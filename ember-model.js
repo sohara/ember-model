@@ -2190,7 +2190,7 @@ var DebugAdapter = Ember.DataAdapter.extend({
 
 Ember.onLoad('Ember.Application', function(Application) {
   Application.initializer({
-    name: "data-adapter",
+    name: "ember-model-data-adapter",
 
     initialize: function() {
       var application = arguments[1] || arguments[0];
@@ -2285,7 +2285,7 @@ Ember.Model.Store = Ember.Service.extend({
 Ember.onLoad('Ember.Application', function(Application) {
 
   Application.initializer({
-    name: "store",
+    name: "ember-model-store",
 
     initialize: function() {
       var application = arguments[1] || arguments[0];

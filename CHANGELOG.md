@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.1] 2017-10-25
+- Avoid naming collision with ember-data
+
 ## [0.2.0] 2017-06-18
 - Convert package to an Ember CLI Addon, with exported ES Module shims for main
   classes/modules
