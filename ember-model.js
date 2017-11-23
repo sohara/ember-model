@@ -704,7 +704,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
         relationshipData = data[relationshipKey];
         if (relationshipData) {
-          Ember.setOwner(relationshipData, owner);
+          // Ember.setOwner(relationshipData, owner);
           relationshipType.load(relationshipData);
         }
       }
@@ -717,7 +717,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (isDescriptor(value)) {
+    if (isDescriptor(value) && value.meta) {
       var meta = value.meta();
       var klass = proto.constructor;
 
@@ -1379,7 +1379,7 @@ Ember.Model.reopenClass({
     }
     Ember.setOwner(record, owner);
     // set(record, 'data', data);
-    
+
     record.load(data[get(this, 'primaryKey')], data);
     if (!this.adapter.serializer) {
       var store = owner.lookup('service:store');
