@@ -5,7 +5,7 @@ Ember.Model.Store = Ember.Service.extend({
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
     var Factory = owner.factoryFor('model:'+type);
-    return Factory.class;
+    return Factory && Factory.class;
   },
 
   modelFactoryFor: function(modelName) {

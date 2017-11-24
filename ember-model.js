@@ -704,7 +704,6 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
         relationshipData = data[relationshipKey];
         if (relationshipData) {
-          // Ember.setOwner(relationshipData, owner);
           relationshipType.load(relationshipData);
         }
       }
@@ -2211,7 +2210,7 @@ Ember.Model.Store = Ember.Service.extend({
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
     var Factory = owner.factoryFor('model:'+type);
-    return Factory.class;
+    return Factory && Factory.class;
   },
 
   modelFactoryFor: function(modelName) {
