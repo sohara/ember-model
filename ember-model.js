@@ -704,7 +704,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
         relationshipData = data[relationshipKey];
         if (relationshipData) {
-          relationshipType.load(relationshipData);
+          relationshipType.load(relationshipData, owner);
         }
       }
     }
