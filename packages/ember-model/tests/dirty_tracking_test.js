@@ -130,6 +130,8 @@ test("after reloading, the model shouldn't be dirty", function() {
     id: attr(),
     name: attr()
   });
+  owner = buildOwner();
+  Ember.setOwner(Model, owner);
   Model.adapter = Ember.FixtureAdapter.create();
 
   Model.load([{ id: '123', name: 'Version 1' }]);
@@ -447,6 +449,9 @@ test("isDirty on embedded hasMany records should be false after parent is saved"
     comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
   });
 
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Post, owner);
   var post = Post.create({
     isNew: false,
     _data: {
@@ -738,6 +743,10 @@ test("manipulating the content of objects in a hasMany should dirty the parent",
     id: Ember.attr(),
     comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
   });
+
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Post, owner);
 
   var post = Post.create({
     isNew: false,

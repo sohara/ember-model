@@ -43,7 +43,9 @@ Ember.ManyArray = Ember.RecordArray.extend({
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
-    var owner = Ember.getOwner(this);
+    var parentContructor = this.parent && this.parent.constructor;
+    var owner = Ember.getOwner(this) ||
+      Ember.getOwner(parentContructor);
     var record = this.materializeRecord(idx, owner);
 
     if (observerNeeded) {

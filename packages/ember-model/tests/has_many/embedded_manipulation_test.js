@@ -23,6 +23,10 @@ test("pushing record adds a record to many array", function() {
     comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
   });
 
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+
   var article = Article.create();
   Ember.run(article, article.load, json.id, json);
 
@@ -63,6 +67,10 @@ test("removing a record from the many array", function() {
 
     comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
 
   var article = Article.create();
   Ember.run(article, article.load, json.id, json);

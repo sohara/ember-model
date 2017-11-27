@@ -463,14 +463,15 @@ Ember.Model.reopenClass({
   },
 
   fetch: function(id) {
+    var owner = Ember.getOwner(this);
     if (!arguments.length) {
-      return this._findFetchAll(true);
+      return this._findFetchAll(true, owner);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, true);
+      return this._findFetchMany(id, true, owner);
     } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, true);
+      return this._findFetchQuery(id, true, owner);
     } else {
-      return this._findFetchById(id, true);
+      return this._findFetchById(id, true, owner);
     }
   },
 
@@ -479,7 +480,7 @@ Ember.Model.reopenClass({
     if (!arguments.length) {
       return this._findFetchAll(false);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, false);
+      return this._findFetchMany(id, false, owner);
     } else if (typeof id === 'object') {
       return this._findFetchQuery(id, false);
     } else {
@@ -508,7 +509,8 @@ Ember.Model.reopenClass({
   },
 
   fetchMany: function(ids) {
-    return this._findFetchMany(ids, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchMany(ids, true, owner);
   },
 
   _findFetchMany: function(ids, isFetch, owner) {
@@ -593,7 +595,8 @@ Ember.Model.reopenClass({
   },
 
   fetchById: function(id) {
-    return this._findFetchById(id, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchById(id, true, owner);
   },
 
   _findFetchById: function(id, isFetch, owner) {
@@ -670,7 +673,7 @@ Ember.Model.reopenClass({
     this._currentBatchDeferreds = null;
 
     for (i = 0; i < batchIds.length; i++) {
-      if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
+      if (!this.cachedRecordForId(batchIds[i], owner).get('isLoaded')) {
         requestIds.push(batchIds[i]);
       }
     }

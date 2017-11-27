@@ -60,6 +60,10 @@ test('adding and reverting an existing record to a many array', function () {
     comments: Ember.hasMany(Comment, { key: 'comments' })
   });
 
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+
   Comment.adapter = Ember.FixtureAdapter.create();
   Comment.FIXTURES = [
     {id: 1, text: 'uno'},
@@ -160,7 +164,8 @@ test("removing a record from the many array", function() {
   owner.register('model:test', Comment);
   owner.register('service:store', Ember.Model.Store);
   Ember.setOwner(Comment, owner);
-  
+  Ember.setOwner(Article, owner);
+
   var article = Article.create();
   Ember.run(article, article.load, json.id, json);
 
@@ -194,6 +199,10 @@ test("setting a has many array with empty array", function() {
 
     comments: Ember.hasMany(Comment, { key: 'comments' })
   });
+
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
 
   Comment.adapter = Ember.FixtureAdapter.create();
   Comment.FIXTURES = [
@@ -234,6 +243,10 @@ test("setting a has many array with item array", function() {
     comments: Ember.hasMany(Comment, { key: 'comments' })
   });
 
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+
   Comment.adapter = Ember.FixtureAdapter.create();
   Comment.FIXTURES = [
     {id: 1, text: 'uno'},
@@ -272,6 +285,10 @@ test("setting a hasMany array with setObjects", function() {
 
     comments: Ember.hasMany(Comment, { key: 'comments' })
   });
+
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
 
   Comment.adapter = Ember.FixtureAdapter.create();
   Comment.FIXTURES = [

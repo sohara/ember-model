@@ -87,6 +87,10 @@ test("non embedded belongsTo should get a record by its id", function() {
         article: Ember.belongsTo(Article, { key: 'article_slug' })
       });
 
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
+
   Article.primaryKey = 'slug';
   Article.adapter = Ember.FixtureAdapter.create();
   Article.FIXTURES = [{ slug: 'first-article' }];
@@ -110,6 +114,10 @@ test("relationship should be refreshed when data changes", function() {
       Comment = Ember.Model.extend({
         article: Ember.belongsTo(Article, { key: 'article_slug' })
       });
+
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
 
   Article.primaryKey = 'slug';
   Article.adapter = Ember.FixtureAdapter.create();
@@ -171,6 +179,9 @@ test("toJSON uses the given relationship key in belongsTo", function() {
   var Comment = Ember.Model.extend({
     article: Ember.belongsTo(Article, { key: 'article_id' })
   });
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
 
   var comment = Comment.create();
 
@@ -507,6 +518,10 @@ test("belongsTo from an embedded source is able to materialize without having to
         body: Ember.attr('string'),
         project: Ember.belongsTo('Ember.Project', {key:'project'})
     });
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
+  Ember.setOwner(Post, owner);
 
   var compJson = {
     id:1,
@@ -522,7 +537,7 @@ test("belongsTo from an embedded source is able to materialize without having to
 
   Company.load([compJson]);
   var company = Company.find(1);
-  var owner = buildOwner();
+  owner = buildOwner();
   Ember.setOwner(company, owner);
 
   equal(company.get('projects.length'), 1);
@@ -549,6 +564,10 @@ test("unloaded records are removed from reference cache", function() {
         title: Ember.attr('string'),
         company: Ember.belongsTo('Ember.Company', {key:'company'})
     });
+
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
 
   var compJson = {
     id:1,
@@ -595,6 +614,10 @@ test("unloaded records are removed from hasMany cache", function() {
         company: Ember.belongsTo('Ember.Company', {key:'company'})
     });
 
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
+
   var compJson = {
     id:1,
     title:'coolio',
@@ -639,6 +662,10 @@ test("belongsTo records created are available from reference cache", function() 
         title: Ember.attr('string'),
         company: Ember.belongsTo('Ember.Company', {key:'company'})
     });
+
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
 
   var compJson = {
     id:1,
@@ -701,6 +728,10 @@ test("key defaults to model's property key", function() {
   var Comment = Ember.Model.extend({
     article: Ember.belongsTo(Article)
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(Article, owner);
+  Ember.setOwner(Comment, owner);
 
   var comment = Comment.create();
 

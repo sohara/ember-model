@@ -324,7 +324,9 @@ Ember.ManyArray = Ember.RecordArray.extend({
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
-    var owner = Ember.getOwner(this);
+    var parentContructor = this.parent && this.parent.constructor;
+    var owner = Ember.getOwner(this) ||
+      Ember.getOwner(parentContructor);
     var record = this.materializeRecord(idx, owner);
 
     if (observerNeeded) {
@@ -1028,14 +1030,15 @@ Ember.Model.reopenClass({
   },
 
   fetch: function(id) {
+    var owner = Ember.getOwner(this);
     if (!arguments.length) {
-      return this._findFetchAll(true);
+      return this._findFetchAll(true, owner);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, true);
+      return this._findFetchMany(id, true, owner);
     } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, true);
+      return this._findFetchQuery(id, true, owner);
     } else {
-      return this._findFetchById(id, true);
+      return this._findFetchById(id, true, owner);
     }
   },
 
@@ -1044,7 +1047,7 @@ Ember.Model.reopenClass({
     if (!arguments.length) {
       return this._findFetchAll(false);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, false);
+      return this._findFetchMany(id, false, owner);
     } else if (typeof id === 'object') {
       return this._findFetchQuery(id, false);
     } else {
@@ -1073,7 +1076,8 @@ Ember.Model.reopenClass({
   },
 
   fetchMany: function(ids) {
-    return this._findFetchMany(ids, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchMany(ids, true, owner);
   },
 
   _findFetchMany: function(ids, isFetch, owner) {
@@ -1158,7 +1162,8 @@ Ember.Model.reopenClass({
   },
 
   fetchById: function(id) {
-    return this._findFetchById(id, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchById(id, true, owner);
   },
 
   _findFetchById: function(id, isFetch, owner) {
@@ -1235,7 +1240,7 @@ Ember.Model.reopenClass({
     this._currentBatchDeferreds = null;
 
     for (i = 0; i < batchIds.length; i++) {
-      if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
+      if (!this.cachedRecordForId(batchIds[i], owner).get('isLoaded')) {
         requestIds.push(batchIds[i]);
       }
     }
@@ -2228,8 +2233,11 @@ Ember.Model.Store = Ember.Service.extend({
       adapter.set('serializer', serializer);
       return adapter;
     } else {
-      adapter = owner.factoryFor('adapter:'+ type) ||
-        owner.factoryFor('adapter:application') ||
+
+      var typeAdapter = owner.factoryFor('adapter:' + type);
+      var applicationAdapter = owner.factoryFor('adapter:application');
+      adapter = (typeAdapter && typeAdapter.class && typeAdapter) ||
+        (applicationAdapter && applicationAdapter.class && applicationAdapter) ||
         Ember.RESTAdapter;
 
       return adapter ? adapter.create({serializer:serializer}) : adapter;
@@ -2238,8 +2246,10 @@ Ember.Model.Store = Ember.Service.extend({
 
   serializerFor: function(type) {
     var owner = Ember.getOwner(this);
-    var serializer = owner.factoryFor('serializer:'+ type) ||
-      owner.factoryFor('serializer:application') ||
+    var typeSerializer = owner.factoryFor('serializer:'+ type);
+    var applicationSerializer = owner.factoryFor('serializer:application');
+    var serializer = (typeSerializer && typeSerializer.class && typeSerializer) ||
+      (applicationSerializer && applicationSerializer.class && applicationSerializer) ||
       Ember.JSONSerializer;
 
     return serializer ? serializer.create() : serializer;

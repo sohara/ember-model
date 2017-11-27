@@ -22,8 +22,11 @@ Ember.Model.Store = Ember.Service.extend({
       adapter.set('serializer', serializer);
       return adapter;
     } else {
-      adapter = owner.factoryFor('adapter:'+ type) ||
-        owner.factoryFor('adapter:application') ||
+
+      var typeAdapter = owner.factoryFor('adapter:' + type);
+      var applicationAdapter = owner.factoryFor('adapter:application');
+      adapter = (typeAdapter && typeAdapter.class && typeAdapter) ||
+        (applicationAdapter && applicationAdapter.class && applicationAdapter) ||
         Ember.RESTAdapter;
 
       return adapter ? adapter.create({serializer:serializer}) : adapter;
@@ -32,8 +35,10 @@ Ember.Model.Store = Ember.Service.extend({
 
   serializerFor: function(type) {
     var owner = Ember.getOwner(this);
-    var serializer = owner.factoryFor('serializer:'+ type) ||
-      owner.factoryFor('serializer:application') ||
+    var typeSerializer = owner.factoryFor('serializer:'+ type);
+    var applicationSerializer = owner.factoryFor('serializer:application');
+    var serializer = (typeSerializer && typeSerializer.class && typeSerializer) ||
+      (applicationSerializer && applicationSerializer.class && applicationSerializer) ||
       Ember.JSONSerializer;
 
     return serializer ? serializer.create() : serializer;

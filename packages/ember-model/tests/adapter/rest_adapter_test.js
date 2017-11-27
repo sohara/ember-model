@@ -11,6 +11,8 @@ module("Ember.RESTAdapter", {
     RESTModel = Ember.Model.extend({
       name: Ember.attr()
     });
+    owner = buildOwner();
+    Ember.setOwner(RESTModel, owner);
     adapter = RESTModel.adapter = Ember.RESTAdapter.create();
   }
 });
@@ -665,6 +667,8 @@ module("Ember.RESTAdapter - with an embedded array attribute", {
     RESTModel.url = "/posts";
     RESTModel.collectionKey = "posts";
     RESTModel.rootKey = "post";
+    owner = buildOwner();
+    Ember.setOwner(RESTModel, owner);
     adapter = RESTModel.adapter = Ember.RESTAdapter.create();
     _ajax = adapter._ajax;
   }
@@ -703,6 +707,8 @@ module("Ember.RESTAdapter - with custom ajax settings", {
     RESTModel.url = "/posts";
     RESTModel.collectionKey = "posts";
     RESTModel.rootKey = "post";
+    owner = buildOwner();
+    Ember.setOwner(RESTModel, owner);
     var CustomAdapter = Ember.RESTAdapter.extend({
       ajaxSettings: function(url, method) {
         return {
@@ -776,6 +782,8 @@ test("find with 0", function() {
     adapter = RESTModel.adapter = Ember.RESTAdapter.create();
 
   RESTModel.url = '/posts';
+  owner = buildOwner();
+  Ember.setOwner(RESTModel, owner);
 
   adapter._ajax = function(url, params, method) {
     equal(url, "/posts/0");

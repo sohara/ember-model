@@ -1,9 +1,13 @@
+var owner;
+
 module("Ember.Adapter#findMany");
 
 test(".find([]) delegates to the adapter's findMany method", function() {
   expect(8);
-  
+  owner = buildOwner();
+
   var Model = Ember.Model.extend();
+  Ember.setOwner(Model, owner);
   Model.adapter = {
     findMany: function(klass, adapterRecords, ids) {
       equal(klass, Model, "Class is passed into Adapter#findMany");
