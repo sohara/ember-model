@@ -1,11 +1,14 @@
 var CustomModel;
+var owner;
 
 module("Ember.CustomAdapter", {
   setup: function() {
+    owner = buildOwner();
     Ember.CustomAdapter = Ember.Adapter.extend();
     CustomModel = Ember.Model.extend({
       name: Ember.attr()
     });
+    Ember.setOwner(CustomModel, owner);
     CustomModel.adapter = Ember.CustomAdapter.create();
   }
 });

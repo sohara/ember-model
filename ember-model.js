@@ -1040,6 +1040,7 @@ Ember.Model.reopenClass({
   },
 
   find: function(id) {
+    var owner = Ember.getOwner(this);
     if (!arguments.length) {
       return this._findFetchAll(false);
     } else if (Ember.isArray(id)) {
@@ -1047,7 +1048,7 @@ Ember.Model.reopenClass({
     } else if (typeof id === 'object') {
       return this._findFetchQuery(id, false);
     } else {
-      return this._findFetchById(id, false);
+      return this._findFetchById(id, false, owner);
     }
   },
 
