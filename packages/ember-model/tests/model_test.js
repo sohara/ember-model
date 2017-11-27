@@ -83,6 +83,9 @@ test("isLoaded observers have all the updated properties", function() {
     adapter: FooAdapter.create()
   });
 
+  var owner = buildOwner();
+  Ember.setOwner(Foo, owner);
+
   var model = Foo.find('abc123');
 });
 
@@ -112,6 +115,9 @@ test("can handle models with ID of zero", function() {
       id: Ember.attr(),
       name: Ember.attr()
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(ModelWithZeroID, owner);
 
   ModelWithZeroID.adapter = Ember.FixtureAdapter.create();
   ModelWithZeroID.FIXTURES = [
@@ -569,6 +575,11 @@ test("toJSON includes embedded relationships", function() {
         author: Ember.belongsTo(Author, { key: 'author', embedded: true })
       });
 
+  owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Author, owner);
+  Ember.setOwner(Article, owner);
+
   var articleData = {
     id: 1,
     title: 'foo',
@@ -755,9 +766,12 @@ test("record is available in reference cache when load is run in cachedRecordFor
         }
       });
 
+  owner = buildOwner();
+  Ember.setOwner(Post, owner);
+
   Post.sideloadedData = { '1': { id: '1' } };
 
-  Post.cachedRecordForId('1');
+  Post.cachedRecordForId('1', owner);
 
   ok(recordFromCache, 'record should be available in cache when running load');
 });

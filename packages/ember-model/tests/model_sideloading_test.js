@@ -11,6 +11,9 @@ test("data can be sideloaded without materializing records", function() {
     camelCase: attr()
   });
 
+  var owner = buildOwner();
+  Ember.setOwner(Model, owner);
+
   Model.adapter = {
     find: function(record, id) {
       ok(false, "Adapter#find shouldn't be called for records with sideloaded data");
@@ -35,6 +38,10 @@ test("sideloading works with camelized attributes", function() {
   var Model = Ember.Model.extend({
     camelCase: attr()
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(Model, owner);
+
   Model.camelizeKeys = true;
 
   Model.load([{id: 1, camel_case: "Dromedary"}]);
@@ -55,6 +62,9 @@ test("sideloading clears sideload and record cache", function() {
     name: attr(),
     worth: attr()
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(Model, owner);
 
   Model.adapter = {
     find: function(record, id) {

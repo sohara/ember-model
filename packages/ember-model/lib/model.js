@@ -134,13 +134,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       if (relationshipMeta.options.embedded) {
         relationshipType = relationshipMeta.type;
         if (typeof relationshipType === "string") {
-          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner._lookupFactory('model:'+ relationshipType);
+          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner.factoryFor('model:'+ relationshipType).class;
         }
 
         relationshipData = data[relationshipKey];
         if (relationshipData) {
-          Ember.setOwner(relationshipData, owner);
-          relationshipType.load(relationshipData);
+          relationshipType.load(relationshipData, owner);
         }
       }
     }
@@ -152,7 +151,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (isDescriptor(value)) {
+    if (isDescriptor(value) && value.meta) {
       var meta = value.meta();
       var klass = proto.constructor;
 
@@ -464,26 +463,28 @@ Ember.Model.reopenClass({
   },
 
   fetch: function(id) {
+    var owner = Ember.getOwner(this);
     if (!arguments.length) {
-      return this._findFetchAll(true);
+      return this._findFetchAll(true, owner);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, true);
+      return this._findFetchMany(id, true, owner);
     } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, true);
+      return this._findFetchQuery(id, true, owner);
     } else {
-      return this._findFetchById(id, true);
+      return this._findFetchById(id, true, owner);
     }
   },
 
   find: function(id) {
+    var owner = Ember.getOwner(this);
     if (!arguments.length) {
       return this._findFetchAll(false);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, false);
+      return this._findFetchMany(id, false, owner);
     } else if (typeof id === 'object') {
       return this._findFetchQuery(id, false);
     } else {
-      return this._findFetchById(id, false);
+      return this._findFetchById(id, false, owner);
     }
   },
 
@@ -508,7 +509,8 @@ Ember.Model.reopenClass({
   },
 
   fetchMany: function(ids) {
-    return this._findFetchMany(ids, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchMany(ids, true, owner);
   },
 
   _findFetchMany: function(ids, isFetch, owner) {
@@ -593,7 +595,8 @@ Ember.Model.reopenClass({
   },
 
   fetchById: function(id) {
-    return this._findFetchById(id, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchById(id, true, owner);
   },
 
   _findFetchById: function(id, isFetch, owner) {
@@ -670,7 +673,7 @@ Ember.Model.reopenClass({
     this._currentBatchDeferreds = null;
 
     for (i = 0; i < batchIds.length; i++) {
-      if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
+      if (!this.cachedRecordForId(batchIds[i], owner).get('isLoaded')) {
         requestIds.push(batchIds[i]);
       }
     }
@@ -730,8 +733,8 @@ Ember.Model.reopenClass({
           attrs = {isLoaded: false};
 
       attrs[primaryKey] = id;
-      record = this.create(attrs);
-      Ember.setOwner(record, owner);
+      record = this.create(owner.ownerInjection(), attrs);
+      //Ember.setOwner(record, owner);
       if (!this.transient) {
         var sideloadedData = this.sideloadedData && this.sideloadedData[id];
         if (sideloadedData) {
@@ -814,7 +817,7 @@ Ember.Model.reopenClass({
     }
     Ember.setOwner(record, owner);
     // set(record, 'data', data);
-    
+
     record.load(data[get(this, 'primaryKey')], data);
     if (!this.adapter.serializer) {
       var store = owner.lookup('service:store');

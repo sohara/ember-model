@@ -24,6 +24,10 @@ test("derp", function() {
     comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
   });
 
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+
   var article = Article.create();
   Ember.run(article, article.load, json.id, json);
 
@@ -61,6 +65,10 @@ test("loading embedded data into a parent updates the child records", function()
     comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
   });
 
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Post, owner);
+
   Post.adapter = {
     find: function(record, id) {
       record.load(id, {comments: []});
@@ -88,6 +96,10 @@ test("loading embedded data into a parent with deleted children deletes the chil
     id: attr(),
     comments: Ember.hasMany(Comment, {key: 'comments', embedded: true})
   });
+
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Post, owner);
 
   Post.adapter = {
     find: function(record, id) {

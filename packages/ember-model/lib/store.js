@@ -4,7 +4,14 @@ Ember.Model.Store = Ember.Service.extend({
 
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
-    return owner._lookupFactory('model:'+type);
+    var Factory = owner.factoryFor('model:'+type);
+    return Factory && Factory.class;
+  },
+
+  modelFactoryFor: function(modelName) {
+    var owner = Ember.getOwner(this);
+    var Factory = owner.factoryFor('model:' + modelName);
+    return Factory;
   },
 
   adapterFor: function(type) {
@@ -15,8 +22,11 @@ Ember.Model.Store = Ember.Service.extend({
       adapter.set('serializer', serializer);
       return adapter;
     } else {
-      adapter = owner._lookupFactory('adapter:'+ type) ||
-        owner._lookupFactory('adapter:application') ||
+
+      var typeAdapter = owner.factoryFor('adapter:' + type);
+      var applicationAdapter = owner.factoryFor('adapter:application');
+      adapter = (typeAdapter && typeAdapter.class && typeAdapter) ||
+        (applicationAdapter && applicationAdapter.class && applicationAdapter) ||
         Ember.RESTAdapter;
 
       return adapter ? adapter.create({serializer:serializer}) : adapter;
@@ -25,19 +35,20 @@ Ember.Model.Store = Ember.Service.extend({
 
   serializerFor: function(type) {
     var owner = Ember.getOwner(this);
-    var serializer = owner._lookupFactory('serializer:'+ type) ||
-      owner._lookupFactory('serializer:application') ||
+    var typeSerializer = owner.factoryFor('serializer:'+ type);
+    var applicationSerializer = owner.factoryFor('serializer:application');
+    var serializer = (typeSerializer && typeSerializer.class && typeSerializer) ||
+      (applicationSerializer && applicationSerializer.class && applicationSerializer) ||
       Ember.JSONSerializer;
 
     return serializer ? serializer.create() : serializer;
   },
 
   createRecord: function(type, props) {
-    var klass = this.modelFor(type);
+    var Factory = this.modelFactoryFor(type);
     var owner = Ember.getOwner(this);
-    klass.reopenClass({adapter: this.adapterFor(type)});
-    var record = klass.create(props);
-    Ember.setOwner(record, owner);
+    Factory.class.reopenClass({adapter: this.adapterFor(type)});
+    var record = Factory.create(props);
     return record;
   },
 

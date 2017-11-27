@@ -324,7 +324,9 @@ Ember.ManyArray = Ember.RecordArray.extend({
     // need to add observer if it wasn't materialized before
     var observerNeeded = (content[idx].record) ? false : true;
 
-    var owner = Ember.getOwner(this);
+    var parentContructor = this.parent && this.parent.constructor;
+    var owner = Ember.getOwner(this) ||
+      Ember.getOwner(parentContructor);
     var record = this.materializeRecord(idx, owner);
 
     if (observerNeeded) {
@@ -497,22 +499,22 @@ Ember.HasManyArray = Ember.ManyArray.extend({
 
 Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
   create: function(attrs) {
-    var klass = get(this, 'modelClass');
+    var modelClass = get(this, 'modelClass');
     var isPolymorphic = get(this, 'polymorphic');
-    var owner;
+    var owner = Ember.getOwner(this);
+    var Factory;
     var record;
     var store;
     var type;
 
     if (isPolymorphic) {
-      Ember.assert('The class ' + klass.toString() + ' is missing the polymorphicType implementation.', klass.polymorphicType);
-      owner = Ember.getOwner(this);
+      Ember.assert('The class ' + modelClass.toString() + ' is missing the polymorphicType implementation.', modelClass.polymorphicType);
       store = owner.lookup('service:store');
-      type =  klass.polymorphicType(attrs);
-      klass = store.modelFor(type);
+      type =  modelClass.polymorphicType(attrs);
+      Factory = store.modelFactoryFor(type);
     }
 
-    record = klass.create(attrs);
+    record = (Factory || modelClass).create(attrs);
     this.pushObject(record);
 
     return record; // FIXME: inject parent's id
@@ -523,7 +525,8 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
     var reference = content.objectAt(idx);
     var attrs = reference.data;
     var isPolymorphic = get(this, 'polymorphic');
-    var klass = get(this, 'modelClass');
+    var modelClass = get(this, 'modelClass');
+    var Factory;
     var primaryKey;
     var type;
     var store;
@@ -534,19 +537,19 @@ Ember.EmbeddedHasManyArray = Ember.ManyArray.extend({
       Ember.setOwner(record, owner);
     } else {
       if (isPolymorphic) {
-        Ember.assert('The class ' + klass.toString() + ' is missing the polymorphicType implementation.', klass.polymorphicType);
+        Ember.assert('The class ' + modelClass.toString() + ' is missing the polymorphicType implementation.', modelClass.polymorphicType);
         store = owner.lookup('service:store');
-        type =  klass.polymorphicType(attrs);
-        klass = store.modelFor(type);
-        if (!klass.adapter.serializer) {
-          Ember.set(klass, 'adapter', store.adapterFor(type));
+        type =  modelClass.polymorphicType(attrs);
+        modelClass = store.modelFor(type);
+        Factory = store.modelFactoryFor(type);
+        if (!modelClass.adapter.serializer) {
+          Ember.set(modelClass, 'adapter', store.adapterFor(type));
         }
       }
-      record = klass.create({ _reference: reference });
+      record = (Factory || modelClass).create(owner.ownerInjection(), { _reference: reference });
       reference.record = record;
-      Ember.setOwner(record, owner);
       if (attrs) {
-        primaryKey = get(klass, 'primaryKey');
+        primaryKey = get(modelClass, 'primaryKey');
         record.load(attrs[primaryKey], attrs);
       }
     }
@@ -698,13 +701,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       if (relationshipMeta.options.embedded) {
         relationshipType = relationshipMeta.type;
         if (typeof relationshipType === "string") {
-          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner._lookupFactory('model:'+ relationshipType);
+          relationshipType = Ember.get(Ember.lookup, relationshipType) || owner.factoryFor('model:'+ relationshipType).class;
         }
 
         relationshipData = data[relationshipKey];
         if (relationshipData) {
-          Ember.setOwner(relationshipData, owner);
-          relationshipType.load(relationshipData);
+          relationshipType.load(relationshipData, owner);
         }
       }
     }
@@ -716,7 +718,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
   },
 
   didDefineProperty: function(proto, key, value) {
-    if (isDescriptor(value)) {
+    if (isDescriptor(value) && value.meta) {
       var meta = value.meta();
       var klass = proto.constructor;
 
@@ -1028,26 +1030,28 @@ Ember.Model.reopenClass({
   },
 
   fetch: function(id) {
+    var owner = Ember.getOwner(this);
     if (!arguments.length) {
-      return this._findFetchAll(true);
+      return this._findFetchAll(true, owner);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, true);
+      return this._findFetchMany(id, true, owner);
     } else if (typeof id === 'object') {
-      return this._findFetchQuery(id, true);
+      return this._findFetchQuery(id, true, owner);
     } else {
-      return this._findFetchById(id, true);
+      return this._findFetchById(id, true, owner);
     }
   },
 
   find: function(id) {
+    var owner = Ember.getOwner(this);
     if (!arguments.length) {
       return this._findFetchAll(false);
     } else if (Ember.isArray(id)) {
-      return this._findFetchMany(id, false);
+      return this._findFetchMany(id, false, owner);
     } else if (typeof id === 'object') {
       return this._findFetchQuery(id, false);
     } else {
-      return this._findFetchById(id, false);
+      return this._findFetchById(id, false, owner);
     }
   },
 
@@ -1072,7 +1076,8 @@ Ember.Model.reopenClass({
   },
 
   fetchMany: function(ids) {
-    return this._findFetchMany(ids, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchMany(ids, true, owner);
   },
 
   _findFetchMany: function(ids, isFetch, owner) {
@@ -1157,7 +1162,8 @@ Ember.Model.reopenClass({
   },
 
   fetchById: function(id) {
-    return this._findFetchById(id, true);
+    var owner = Ember.getOwner(this);
+    return this._findFetchById(id, true, owner);
   },
 
   _findFetchById: function(id, isFetch, owner) {
@@ -1234,7 +1240,7 @@ Ember.Model.reopenClass({
     this._currentBatchDeferreds = null;
 
     for (i = 0; i < batchIds.length; i++) {
-      if (!this.cachedRecordForId(batchIds[i]).get('isLoaded')) {
+      if (!this.cachedRecordForId(batchIds[i], owner).get('isLoaded')) {
         requestIds.push(batchIds[i]);
       }
     }
@@ -1294,8 +1300,8 @@ Ember.Model.reopenClass({
           attrs = {isLoaded: false};
 
       attrs[primaryKey] = id;
-      record = this.create(attrs);
-      Ember.setOwner(record, owner);
+      record = this.create(owner.ownerInjection(), attrs);
+      //Ember.setOwner(record, owner);
       if (!this.transient) {
         var sideloadedData = this.sideloadedData && this.sideloadedData[id];
         if (sideloadedData) {
@@ -1378,7 +1384,7 @@ Ember.Model.reopenClass({
     }
     Ember.setOwner(record, owner);
     // set(record, 'data', data);
-    
+
     record.load(data[get(this, 'primaryKey')], data);
     if (!this.adapter.serializer) {
       var store = owner.lookup('service:store');
@@ -2209,7 +2215,14 @@ Ember.Model.Store = Ember.Service.extend({
 
   modelFor: function(type) {
     var owner = Ember.getOwner(this);
-    return owner._lookupFactory('model:'+type);
+    var Factory = owner.factoryFor('model:'+type);
+    return Factory && Factory.class;
+  },
+
+  modelFactoryFor: function(modelName) {
+    var owner = Ember.getOwner(this);
+    var Factory = owner.factoryFor('model:' + modelName);
+    return Factory;
   },
 
   adapterFor: function(type) {
@@ -2220,8 +2233,11 @@ Ember.Model.Store = Ember.Service.extend({
       adapter.set('serializer', serializer);
       return adapter;
     } else {
-      adapter = owner._lookupFactory('adapter:'+ type) ||
-        owner._lookupFactory('adapter:application') ||
+
+      var typeAdapter = owner.factoryFor('adapter:' + type);
+      var applicationAdapter = owner.factoryFor('adapter:application');
+      adapter = (typeAdapter && typeAdapter.class && typeAdapter) ||
+        (applicationAdapter && applicationAdapter.class && applicationAdapter) ||
         Ember.RESTAdapter;
 
       return adapter ? adapter.create({serializer:serializer}) : adapter;
@@ -2230,19 +2246,20 @@ Ember.Model.Store = Ember.Service.extend({
 
   serializerFor: function(type) {
     var owner = Ember.getOwner(this);
-    var serializer = owner._lookupFactory('serializer:'+ type) ||
-      owner._lookupFactory('serializer:application') ||
+    var typeSerializer = owner.factoryFor('serializer:'+ type);
+    var applicationSerializer = owner.factoryFor('serializer:application');
+    var serializer = (typeSerializer && typeSerializer.class && typeSerializer) ||
+      (applicationSerializer && applicationSerializer.class && applicationSerializer) ||
       Ember.JSONSerializer;
 
     return serializer ? serializer.create() : serializer;
   },
 
   createRecord: function(type, props) {
-    var klass = this.modelFor(type);
+    var Factory = this.modelFactoryFor(type);
     var owner = Ember.getOwner(this);
-    klass.reopenClass({adapter: this.adapterFor(type)});
-    var record = klass.create(props);
-    Ember.setOwner(record, owner);
+    Factory.class.reopenClass({adapter: this.adapterFor(type)});
+    var record = Factory.create(props);
     return record;
   },
 

@@ -24,6 +24,10 @@ test("derp", function() {
     comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
   });
 
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+
   Comment.adapter = {
 
     createRecord: function(record) {
@@ -92,7 +96,7 @@ test("new records should remain after parent is saved", function() {
       resolve(json);
     });
   };
-  
+
   var article = Article.create({
     title: 'foo'
   });

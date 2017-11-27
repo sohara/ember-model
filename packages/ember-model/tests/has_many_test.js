@@ -58,6 +58,10 @@ test("using it in a model definition", function() {
         comments: Ember.hasMany(Comment, { key: 'comments', embedded: true })
       });
 
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+
   Comment.primaryKey = 'token';
 
   var article = Article.create();
@@ -74,6 +78,10 @@ test("model can be specified with a string instead of a class", function() {
       Comment = Ember.CommentModel = Ember.Model.extend({
         token: Ember.attr(String)
       });
+
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
 
   Comment.primaryKey = 'token';
 
@@ -164,6 +172,10 @@ test("toJSON uses the given relationship key", function() {
         comments: Ember.hasMany(Comment, { key: 'comment_ids' })
       });
 
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
+
   Comment.adapter = Ember.FixtureAdapter.create();
   Article.adapter = Ember.FixtureAdapter.create();
 
@@ -217,6 +229,11 @@ test("has many records created are available from reference cache", function() {
         body: Ember.attr('string'),
         project: Ember.belongsTo('Ember.Project', {key:'project'})
     });
+
+  var owner = buildOwner();
+  Ember.setOwner(Company, owner);
+  Ember.setOwner(Project, owner);
+  Ember.setOwner(Post, owner);
 
   var compJson = {
     id:1,
@@ -280,6 +297,10 @@ test("key defaults to model's property key", function() {
     Article = Ember.Model.extend({
       comments: Ember.hasMany(Comment)
     });
+
+  var owner = buildOwner();
+  Ember.setOwner(Comment, owner);
+  Ember.setOwner(Article, owner);
 
   Comment.adapter = Ember.FixtureAdapter.create();
   Article.adapter = Ember.FixtureAdapter.create();
