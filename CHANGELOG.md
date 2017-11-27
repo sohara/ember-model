@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.0] 2017-11-27
+- Support Ember 2.16 (migrate container APIs)
+
 ## [0.2.1] 2017-10-25
 - Avoid naming collision with ember-data
 
