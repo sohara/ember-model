@@ -59,6 +59,10 @@ Ember.belongsTo = function(type, options) {
     },
 
     set: function(propertyKey, value, oldValue){
+      var store = storeFor(this);
+      if (meta.options.polymorphic) {
+
+      }
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
@@ -116,6 +120,12 @@ Ember.Model.reopen({
 
     if (Ember.isNone(idOrAttrs)) {
       return null;
+    }
+
+    if (meta.options.polymorphic) {
+      Ember.assert('The class ' + type.toString() + ' is missing the polymorphicType implementation.', type.polymorphicType);
+      var typeName = type.polymorphicType(idOrAttrs);
+      type = store.modelFactoryFor(typeName);
     }
 
     if (meta.options.embedded) {
