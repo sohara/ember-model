@@ -724,9 +724,7 @@ Ember.Model.reopenClass({
   getCachedReferenceRecord: function(id, owner){
     var ref = this._getReferenceById(id);
     if(ref && ref.record) {
-      if (! Ember.getOwner(ref.record)) {
-        Ember.setOwner(ref.record, owner);
-      }
+      Ember.setOwner(ref.record, owner);
       return ref.record;
     }
     return undefined;
