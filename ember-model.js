@@ -1660,10 +1660,6 @@ Ember.belongsTo = function(type, options) {
     },
 
     set: function(propertyKey, value, oldValue){
-      var store = storeFor(this);
-      if (meta.options.polymorphic) {
-
-      }
       type = meta.getType(this);
       Ember.assert("Type cannot be empty.", !Ember.isEmpty(type));
 
